@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PostUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -23,6 +24,9 @@ class UserController extends Controller
             $newUser->username = $request->username;
             $newUser->password = Hash::make($request->password);
             //todo: agregar foto proximamente
+            if($request->hasFile('photo')){
+
+            }
             //$newUser->photo = $request->photo;
             if ($request->role_id == 1) {
                 return response()->json([
@@ -88,6 +92,66 @@ class UserController extends Controller
             return response()->json([
                 "status" => false,
                 "message" => "Error al registrar un usuario",
+                "error" => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getUser($id){
+        try {
+            $user = User::findOrFail($id);
+            //? Al converitr un objeto eloquent a un array o en formato JSON, los campos hidden se aplican
+
+            return response()->json([
+                "status" => true,
+                "message" => "Datos del usuario: " . $user->username,
+                "user" => $user
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                "status" => false,
+                "message" => "Error al obtener el usuario",
+                "error" => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateUser(UpdateUserRequest $request, $id){
+        try {
+            $data = $request->validated();
+            $user = User::findOrFail($id);
+            // TODO: aprender sobre storage en laravel y cuando la data es opcional
+            // ? Si vas a utilizar form-data, toda la data debe estar en ese formato
+            
+            return response()->json([
+                "status" => true,
+                "message" => "Usuario actualizado con exito",
+                "user" => $user
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                "status" => false,
+                "message" => "Error al actualizar el usuario",
+                "error" => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteUser($id){
+        try {
+            $user = User::findOrFail($id);
+            $user->delete();
+
+            return response()->json([
+                "status" => true,
+                "message" => "Usuario eliminado con exito",
+            ], 200);            
+        } catch (Exception $e) {
+            return response()->json([
+                "status" => false,
+                "message" => "Error al borrar el usuario",
                 "error" => $e->getMessage()
             ], 500);
         }

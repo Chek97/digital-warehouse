@@ -23,5 +23,9 @@ use Illuminate\Support\Facades\Route;
 Route::post('register', [UserController::class, 'registerUser']);
 Route::post('login', [UserController::class, 'loginUser']);
 
+Route::get('user/{id}', [UserController::class, 'getUser']);
+Route::post('user/{id}', [UserController::class, 'updateUser']);
+Route::delete('user/{id}', [UserController::class, 'deleteUser']);
+
 // todo: Eliminar
 Route::get('element', [UserController::class, 'getElements'])->middleware('verify.token');
