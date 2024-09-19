@@ -27,6 +27,7 @@ class PostUserRequest extends FormRequest
         return [
             'name' => 'required',
             'username' => 'required|max:50|unique:users,username',
+            'last_name' => 'string|nullable',
             'password' => 'required',
             'photo' => 'image|mimes:jpeg,jpg,png|max:1024',
             'role_id' => 'required|exists:roles,id'

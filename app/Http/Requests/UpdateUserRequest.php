@@ -24,11 +24,13 @@ class UpdateUserRequest extends FormRequest
      */
     public function rules(): array
     {
+        $username = $this->route('id');
+
         return [
             'name' => 'required',
-            'username' => 'required|max:50|unique:users,username',
+            'last_name' => 'string|nullable',
+            'username' => 'required|max:50|unique:users,username,' . $username,
             'photo' => 'image|mimes:jpeg,jpg,png|max:1024',
-            'role_id' => 'required|exists:roles,id'
         ];
     }
 
