@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 
-class PostUserRequest extends FormRequest
+class UpdateUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,13 +24,13 @@ class PostUserRequest extends FormRequest
      */
     public function rules(): array
     {
+        $username = $this->route('id');
+
         return [
             'name' => 'required',
-            'username' => 'required|max:50|unique:users,username',
             'last_name' => 'string|nullable',
-            'password' => 'required',
+            'username' => 'required|max:50|unique:users,username,' . $username,
             'photo' => 'image|mimes:jpeg,jpg,png|max:1024',
-            'role_id' => 'required|exists:roles,id'
         ];
     }
 
@@ -40,6 +40,4 @@ class PostUserRequest extends FormRequest
 
         throw new ValidationException($validator, $response);
     }
-
-    // todo: crear mensajes personalizados
 }
