@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PostUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
+use App\Services\Permissions\PermissionsService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,12 +16,20 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class UserController extends Controller
 {
+    protected $permissionService;
+
+    public function __construct(PermissionsService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     // Registrar acomodadores, o usuarios solicitantes
     public function registerUser(PostUserRequest $request)
     {
         try {
             DB::beginTransaction();
 
+            // Crear usuario
             $newUser = new User();
 
             $newUser->name = $request->name;
@@ -28,6 +37,7 @@ class UserController extends Controller
             $newUser->username = $request->username;
             $newUser->password = Hash::make($request->password);
 
+            // Validar si se envia una foto de perfil
             if ($request->hasFile('photo')) {
 
                 $photo = $request->file('photo');
@@ -51,11 +61,30 @@ class UserController extends Controller
             $newUser->role_id = $request->role_id;
 
             if ($newUser->save()) {
-                DB::commit();
-                return response()->json([
-                    "status" => true,
-                    "message" => "El usuario fue creado con exito"
-                ], 201);
+
+                if ($newUser->role_id == 2) {
+                    $createPermisions = $this->permissionService->createPermissions($newUser->id);
+
+                    if ($createPermisions) {
+                        DB::commit();
+                        return response()->json([
+                            "status" => true,
+                            "message" => "El usuario y sus permisos fueron creados con exito"
+                        ], 201);
+                    } else {
+                        DB::rollBack();
+                        return response()->json([
+                            "status" => false,
+                            "message" => "Los permisos del usuario no pudieron ser creados"
+                        ], 400);
+                    }
+                } else {
+                    DB::commit();
+                    return response()->json([
+                        "status" => true,
+                        "message" => "El usuario fue creado con exito"
+                    ], 201);
+                }
             } else {
                 DB::rollBack();
                 return response()->json([
@@ -217,6 +246,18 @@ class UserController extends Controller
 
                 if (Storage::disk('users')->exists($userDirectory)) {
                     Storage::disk('users')->deleteDirectory($userDirectory);
+                }
+            }
+
+            if ($user->role_id == 2) {
+                $removePermisions = $this->permissionService->removePermissions($user->id);
+
+                if (!$removePermisions) {
+                    DB::rollBack();
+                    return response()->json([
+                        "status" => false,
+                        "message" => "Los permisos del usuario no fueron elimninados",
+                    ], 400);
                 }
             }
 
