@@ -1,8 +1,7 @@
 <?php
 
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserController;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,11 +24,13 @@ Route::post('register', [UserController::class, 'registerUser']);
 Route::post('login', [UserController::class, 'loginUser']);
 
 // -- operaciones de usuario ---
+Route::get('users', [UserController::class, 'getAllUsers']);
 Route::get('user/{id}', [UserController::class, 'getUser']);
 Route::post('user/{id}', [UserController::class, 'updateUser']);
 Route::delete('user/{id}', [UserController::class, 'deleteUser']);
 
 // Permisos
+Route::get('permissions/{id}', [PermissionController::class, 'getPermissionsByUser']);
+Route::put('permission/{id}/change-status', [PermissionController::class, 'changePermissionStatus']);
 
-// todo: Eliminar
-Route::get('element', [UserController::class, 'getElements'])->middleware('verify.token');
+// ->middleware('verify.token');
