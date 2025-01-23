@@ -58,4 +58,20 @@ class PermissionsService
             return false;
         }
     }
+
+    public function changePermissionStatus($data, $permissionId)
+    {
+
+        DB::beginTransaction();
+
+        $userPermission = Permission::findOrFail($permissionId);
+
+        $userPermission->status = $data->newStatus;
+
+        $userPermission->save();
+
+        DB::commit();
+
+        return true;
+    }
 }

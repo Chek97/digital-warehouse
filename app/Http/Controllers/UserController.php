@@ -278,8 +278,31 @@ class UserController extends Controller
         }
     }
 
-    public function getElements()
+    public function getAllUsers()
     {
-        dd("ELementos");
+        try {
+
+            $users = User::with("role:id,name")
+                ->select("id", "username", "role_id",)
+                ->where("id", "!=", 1)
+                ->paginate(10);
+
+            return response()->json([
+                "status" => true,
+                "data" => [
+                    "current_page" => $users->currentPage(),
+                    "per_page" => $users->perPage(),
+                    "total_pages" => $users->lastPage(),
+                    "total_users" => $users->total(),
+                    "users" => $users,
+                ]
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "status" => false,
+                "message" => "Error al obtener lista de usuarios",
+                "error" => $e->getMessage()
+            ], 500);
+        }
     }
 }
